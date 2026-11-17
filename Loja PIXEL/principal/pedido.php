@@ -1,0 +1,8 @@
+<?php
+require_once __DIR__.'/includes/bootstrap.php';require_login();
+$id=filter_input(INPUT_GET,'id',FILTER_VALIDATE_INT);$s=db()->prepare("SELECT * FROM pedidos WHERE id=? AND usuario_id=?");$s->execute([$id,$_SESSION['usuario']['id']]);$order=$s->fetch();if(!$order){http_response_code(404);exit('Pedido não encontrado.');}
+$s=db()->prepare("SELECT pi.*,p.nome FROM pedido_itens pi JOIN produtos p ON p.id=pi.produto_id WHERE pi.pedido_id=?");$s->execute([$id]);$items=$s->fetchAll();$pageTitle='Pedido confirmado';require __DIR__.'/includes/header.php';
+?>
+<div class="text-center py-4"><div class="display-3">✓</div><h1 class="h2">Pedido confirmado!</h1><p class="text-secondary">Pedido #<?= (int)$order['id'] ?> registrado com sucesso.</p></div>
+<div class="card"><div class="card-body"><p><strong>Pagamento:</strong> <?= e($order['pagamento']) ?> (simulado)</p><p><strong>Status:</strong> <?= e($order['status']) ?></p><?php foreach($items as $it): ?><div class="d-flex justify-content-between border-top py-2"><span><?= e($it['nome']) ?> × <?= (int)$it['quantidade'] ?></span><?= money($it['preco_unitario']*$it['quantidade']) ?></div><?php endforeach; ?><hr><div class="d-flex justify-content-between fs-4"><strong>Total</strong><strong><?= money($order['total']) ?></strong></div></div></div><a href="index.php" class="btn btn-dark mt-3">Voltar à loja</a>
+<?php require __DIR__.'/includes/footer.php'; ?>
